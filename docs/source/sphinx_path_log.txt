@@ -1,0 +1,9 @@
+sys.path:
+D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests
+D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests\venv\Scripts\sphinx-build.exe
+C:\Users\Serhii\AppData\Local\Programs\Python\Python311\python311.zip
+C:\Users\Serhii\AppData\Local\Programs\Python\Python311\DLLs
+C:\Users\Serhii\AppData\Local\Programs\Python\Python311\Lib
+C:\Users\Serhii\AppData\Local\Programs\Python\Python311
+D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests\venv
+D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests\venv\Lib\site-packages

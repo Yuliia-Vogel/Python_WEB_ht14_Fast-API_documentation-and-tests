@@ -1,0 +1,43 @@
+├── docs
+|  ├── source
+│  │   ├── conf.py
+│  │   ├── index.rst
+│  |   ├── _static
+│  |   └── _templates
+│  ├── index.rst 
+│  ├── make.bat
+│  └── Makefile
+├── src
+|  ├── conf
+│  │   ├── config.py
+|  ├─database
+│  |   ├── __init__.py 
+│  |   ├── db.py
+│  |   └── models.py
+│  ├── repository
+│  |   ├── __init__.py
+│  |   ├── contacts.py
+│  |   └── users.py
+│  ├── routes
+│  |   ├── __init__.py
+│  |   ├── auth.py
+│  |   └── contacts.py
+│  ├── services
+│  |   ├── __init__.py
+│  |   ├── auth.py
+│  |   ├── email.py
+│  |   └── templates
+│  |       └── email_template.html
+│  ├── __init__.py
+│  └── schemas.py
+├── __init__.py
+├── .env
+├── .env.example
+├── alembic.ini 
+├── architecture.txt
+├── docker-compose.yml
+├── LICENSE
+├── main.py
+├── poetry.lock
+├── pyproject.toml
+└── README.md
