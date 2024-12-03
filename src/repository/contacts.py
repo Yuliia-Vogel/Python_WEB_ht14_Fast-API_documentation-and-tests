@@ -10,22 +10,22 @@ from src.database.models import Contact, User
 from src.schemas import ContactBase, ContactResponse, ContactUpdate
 
 
-async def get_all_contacts(skip: int, limit: int, user: User, db: Session) -> List[Contact]: 
-    """
-    Retrieves a list of contacts for a specific user with specified pagination parameters.
+# async def get_all_contacts(skip: int, limit: int, user: User, db: Session) -> List[Contact]: 
+#     """
+#     Retrieves a list of contacts for a specific user with specified pagination parameters.
 
-    :param skip: The number of contacts to skip.
-    :type skip: int
-    :param limit: The maximum number of contacts to return.
-    :type limit: int
-    :param user: The user to retrieve contacts for.
-    :type user: User
-    :param db: The database session.
-    :type db: Session
-    :return: A list of contacts.
-    :rtype: List[Contact]
-    """
-    return db.query(Contact).filter(Contact.owner_id == user.id).offset(skip).limit(limit).all()
+#     :param skip: The number of contacts to skip.
+#     :type skip: int
+#     :param limit: The maximum number of contacts to return.
+#     :type limit: int
+#     :param user: The user to retrieve contacts for.
+#     :type user: User
+#     :param db: The database session.
+#     :type db: Session
+#     :return: A list of contacts.
+#     :rtype: List[Contact]
+#     """
+#     return db.query(Contact).filter(Contact.owner_id == user.id).offset(skip).limit(limit).all()
 
 
 async def read_contact(contact_id: int, user: User, db: Session) -> Contact | None:

@@ -30,6 +30,9 @@
 │  |       └── email_template.html
 │  ├── __init__.py
 │  └── schemas.py
+├── tests
+|  ├── __init__.py
+│  └── test_unit_repository_contacts
 ├── __init__.py
 ├── .env
 ├── .env.example
