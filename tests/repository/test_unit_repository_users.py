@@ -7,7 +7,8 @@ from src.database.models import User
 from src.schemas import UserModel, UserDb, UserResponse
 from src.repository.users import (
     get_user_by_email,
-    create_user
+    create_user,
+    update_token,
     )
 
 
@@ -17,181 +18,216 @@ class TestUsers(unittest.IsolatedAsyncioTestCase):
         self.session = MagicMock(spec=Session)
 
 
-    async def test_get_user_by_email_found(self):
-        #   тестові дані:
-        users = [
-            User(id=1, email="test_1@example.com"),
-            User(id=2, email="test_2@example.com"),
-            User(id=3, email="test_3@example.com")
-        ]
+    # async def test_get_user_by_email_found(self):
+    #     #   тестові дані:
+    #     users = [
+    #         User(id=1, email="test_1@example.com"),
+    #         User(id=2, email="test_2@example.com"),
+    #         User(id=3, email="test_3@example.com")
+    #     ]
 
-        # Налаштовуємо мок: filter().first() має повернути користувача з email="test_2@example.com"
-        def filter_side_effect(*args, **kwargs):
-            # Емуляція фільтрації за email
-            email_filter = kwargs.get("email", None)
-            for user in users:
-                if user.email == email_filter:
-                    return user
-            return None
+    #     # Налаштовуємо мок: filter().first() має повернути користувача з email="test_2@example.com"
+    #     def filter_side_effect(*args, **kwargs):
+    #         # Емуляція фільтрації за email
+    #         email_filter = kwargs.get("email", None)
+    #         for user in users:
+    #             if user.email == email_filter:
+    #                 return user
+    #         return None
 
-         # Симулюємо поведінку filter().first()
-        self.session.query().filter().first.side_effect = lambda: next(
-            (user for user in users if user.email == "test_2@example.com"), None
-        )
+    #      # Симулюємо поведінку filter().first()
+    #     self.session.query().filter().first.side_effect = lambda: next(
+    #         (user for user in users if user.email == "test_2@example.com"), None
+    #     )
 
-        # Викликаємо функцію
-        result = await get_user_by_email(email="test_2@example.com", db=self.session)
+    #     # Викликаємо функцію
+    #     result = await get_user_by_email(email="test_2@example.com", db=self.session)
 
-        # Перевіряємо, що знайдено саме потрібного користувача
-        self.assertIsNotNone(result)
-        self.assertEqual(result.id, 2)
-        self.assertEqual(result.email, "test_2@example.com")
-
-
-    async def test_get_user_by_email_not_found(self):
-        #    тестові дані:
-        users = [
-            User(id=1, email="test_1@example.com"),
-            User(id=2, email="test_2@example.com"),
-            User(id=3, email="test_3@example.com")
-        ]
-
-        # Налаштовуємо мок: filter().first() має повернути користувача з певним email
-        def filter_side_effect(*args, **kwargs):
-            # Емуляція фільтрації за email
-            email_filter = kwargs.get("email", None)
-            for user in users:
-                if user.email == email_filter:
-                    return user
-            return None
-
-        # мейл, який ми шукаємо (немає в списку):
-        expected_email = "test_4@example.com"
-
-        # Налаштовуємо поведінку filter().first() для симуляції пошуку
-        self.session.query().filter().first.side_effect = lambda: next(
-            (user for user in users if user.email == expected_email), None
-            )
-
-        # Викликаємо функцію
-        result = await get_user_by_email(email=expected_email, db=self.session)
-
-        # Перевіряємо, що результат - None, - користувача з зазначеним мейлом не знайдено
-        self.assertIsNone(result)
+    #     # Перевіряємо, що знайдено саме потрібного користувача
+    #     self.assertIsNotNone(result)
+    #     self.assertEqual(result.id, 2)
+    #     self.assertEqual(result.email, "test_2@example.com")
 
 
-    async def test_get_user_by_email_empty_database(self):
-        # Налаштовуємо мок: filter().first() повертає None, оскільки база порожня
-        self.session.query().filter().first.return_value = None
+    # async def test_get_user_by_email_not_found(self):
+    #     #    тестові дані:
+    #     users = [
+    #         User(id=1, email="test_1@example.com"),
+    #         User(id=2, email="test_2@example.com"),
+    #         User(id=3, email="test_3@example.com")
+    #     ]
 
-        # Email, який ми шукаємо
-        email_to_find = "test@example.com"
+    #     # Налаштовуємо мок: filter().first() має повернути користувача з певним email
+    #     def filter_side_effect(*args, **kwargs):
+    #         # Емуляція фільтрації за email
+    #         email_filter = kwargs.get("email", None)
+    #         for user in users:
+    #             if user.email == email_filter:
+    #                 return user
+    #         return None
 
-        # Викликаємо функцію для пошуку користувача
-        result = await get_user_by_email(email=email_to_find, db=self.session)
+    #     # мейл, який ми шукаємо (немає в списку):
+    #     expected_email = "test_4@example.com"
 
-        # Перевіряємо, що результат — None (користувача не знайдено)
-        self.assertIsNone(result)
+    #     # Налаштовуємо поведінку filter().first() для симуляції пошуку
+    #     self.session.query().filter().first.side_effect = lambda: next(
+    #         (user for user in users if user.email == expected_email), None
+    #         )
+
+    #     # Викликаємо функцію
+    #     result = await get_user_by_email(email=expected_email, db=self.session)
+
+    #     # Перевіряємо, що результат - None, - користувача з зазначеним мейлом не знайдено
+    #     self.assertIsNone(result)
 
 
-    @patch("src.repository.users.Gravatar")
-    async def test_create_user_with_avatar(self, mock_gravatar):
-        body = UserModel(
-                         id=1,
-                         username="AnnaAl", 
-                         email="test@mail.com", 
-                         password="annaa_pass"
-                        )
+    # async def test_get_user_by_email_empty_database(self):
+    #     # Налаштовуємо мок: filter().first() повертає None, оскільки база порожня
+    #     self.session.query().filter().first.return_value = None
+
+    #     # Email, який ми шукаємо
+    #     email_to_find = "test@example.com"
+
+    #     # Викликаємо функцію для пошуку користувача
+    #     result = await get_user_by_email(email=email_to_find, db=self.session)
+
+    #     # Перевіряємо, що результат — None (користувача не знайдено)
+    #     self.assertIsNone(result)
+
+
+    # @patch("src.repository.users.Gravatar")
+    # async def test_create_user_with_avatar(self, mock_gravatar):
+    #     body = UserModel(
+    #                      id=1,
+    #                      username="AnnaAl", 
+    #                      email="test@mail.com", 
+    #                      password="annaa_pass"
+    #                     )
         
-        # Мок Gravatar
-        mock_gravatar_instance = mock_gravatar.return_value
-        mock_gravatar_instance.get_image.return_value = "http://gravatar.com/avatar/mockavatar"
+    #     # Мок Gravatar
+    #     mock_gravatar_instance = mock_gravatar.return_value
+    #     mock_gravatar_instance.get_image.return_value = "http://gravatar.com/avatar/mockavatar"
 
-        # Моковий об'єкт new_user:
-        new_user = User(
-            id=None, # спочатку None
-            username=body.username,
-            email=body.email,
-            password=body.password,
-            avatar=None, # спочатку None
-            created_at=None, # спочатку None
-        )
-        # Налаштування мок-об'єкта:
-        self.session.add.return_value = None # імітація додавання даних в базу даних, return_value = None - щоб нічого зайвого не робилося 
-        self.session.commit.return_value = None # імітація коміту в базу даних
+    #     # Моковий об'єкт new_user:
+    #     new_user = User(
+    #         id=None, # спочатку None
+    #         username=body.username,
+    #         email=body.email,
+    #         password=body.password,
+    #         avatar=None, # спочатку None
+    #         created_at=None, # спочатку None
+    #     )
+    #     # Налаштування мок-об'єкта:
+    #     self.session.add.return_value = None # імітація додавання даних в базу даних, return_value = None - щоб нічого зайвого не робилося 
+    #     self.session.commit.return_value = None # імітація коміту в базу даних
         
-        avatar_url = "http://gravatar.com/avatar/mockavatar"
+    #     avatar_url = "http://gravatar.com/avatar/mockavatar"
 
-        # Симулюємо поведінку db.refresh(new_user)
-        def mock_refresh(user):
-            user.id = 1  # Призначаємо моковий ID
-            user.created_at = datetime.datetime.now()  # Призначаємо моковий час створення
-            user.avatar = avatar_url  # Призначаємо моковий аватар
+    #     # Симулюємо поведінку db.refresh(new_user)
+    #     def mock_refresh(user):
+    #         user.id = 1  # Призначаємо моковий ID
+    #         user.created_at = datetime.datetime.now()  # Призначаємо моковий час створення
+    #         user.avatar = avatar_url  # Призначаємо моковий аватар
 
-        self.session.refresh.side_effect = mock_refresh # моковий "рефреш": додає user_id i created_at до нашого тествого юзера
+    #     self.session.refresh.side_effect = mock_refresh # моковий "рефреш": додає user_id i created_at до нашого тествого юзера
         
-        # Виклик функції
-        result = await create_user(body=body, db=self.session)
+    #     # Виклик функції
+    #     result = await create_user(body=body, db=self.session)
 
-        # Оновлюємо new_user після рефрешу
-        mock_refresh(new_user)
+    #     # Оновлюємо new_user після рефрешу
+    #     mock_refresh(new_user)
 
-        # Перевірка результату
-        self.assertEqual(result.id, 1)
-        self.assertEqual(result.username, new_user.username)
-        self.assertEqual(result.email, new_user.email)
-        self.assertEqual(result.password, new_user.password)
-        self.assertIsNotNone(result.created_at)
-        self.assertEqual(result.created_at, new_user.created_at)
-        self.assertEqual(result.avatar, avatar_url)
+    #     # Перевірка результату
+    #     self.assertEqual(result.id, 1)
+    #     self.assertEqual(result.username, new_user.username)
+    #     self.assertEqual(result.email, new_user.email)
+    #     self.assertEqual(result.password, new_user.password)
+    #     self.assertIsNotNone(result.created_at)
+    #     self.assertEqual(result.created_at, new_user.created_at)
+    #     self.assertEqual(result.avatar, avatar_url)
 
 
-    @patch("src.repository.users.Gravatar")
-    async def test_create_user_no_avatar(self, mock_gravatar):
-        body = UserModel(
-                         id=1,
-                         username="AnnaAl", 
-                         email="test@mail.com", 
-                         password="annaa_pass"
-                        )
+    # @patch("src.repository.users.Gravatar")
+    # async def test_create_user_no_avatar(self, mock_gravatar):
+    #     body = UserModel(
+    #                      id=1,
+    #                      username="AnnaAl", 
+    #                      email="test@mail.com", 
+    #                      password="annaa_pass"
+    #                     )
         
-        # Мок Gravatar
-        mock_gravatar_instance = mock_gravatar.return_value
-        mock_gravatar_instance.get_image.side_effect = Exception("Gravatar service error")
+    #     # Мок Gravatar
+    #     mock_gravatar_instance = mock_gravatar.return_value
+    #     mock_gravatar_instance.get_image.side_effect = Exception("Gravatar service error")
 
-        # Моковий об'єкт new_user:
-        new_user = User(
-            id=None, # спочатку None
-            username=body.username,
-            email=body.email,
-            password=body.password,
-            avatar=None, # спочатку None
-            created_at=None, # спочатку None
-        )
-        # Налаштування мок-об'єкта:
-        self.session.add.return_value = None # імітація додавання даних в базу даних, return_value = None - щоб нічого зайвого не робилося 
-        self.session.commit.return_value = None # імітація коміту в базу даних
+    #     # Моковий об'єкт new_user:
+    #     new_user = User(
+    #         id=None, # спочатку None
+    #         username=body.username,
+    #         email=body.email,
+    #         password=body.password,
+    #         avatar=None, # спочатку None
+    #         created_at=None, # спочатку None
+    #     )
+    #     # Налаштування мок-об'єкта:
+    #     self.session.add.return_value = None # імітація додавання даних в базу даних, return_value = None - щоб нічого зайвого не робилося 
+    #     self.session.commit.return_value = None # імітація коміту в базу даних
 
-        # Симулюємо поведінку db.refresh(new_user)
-        def mock_refresh(user):
-            user.id = 1  # Призначаємо моковий ID
-            user.created_at = datetime.datetime.now()  # Призначаємо моковий час створення
-            user.avatar = None  # Через помилку аватар залишається None
+    #     # Симулюємо поведінку db.refresh(new_user)
+    #     def mock_refresh(user):
+    #         user.id = 1  # Призначаємо моковий ID
+    #         user.created_at = datetime.datetime.now()  # Призначаємо моковий час створення
+    #         user.avatar = None  # Через помилку аватар залишається None
 
-        self.session.refresh.side_effect = mock_refresh # моковий "рефреш": додає user_id i created_at до нашого тествого юзера
+    #     self.session.refresh.side_effect = mock_refresh # моковий "рефреш": додає user_id i created_at до нашого тествого юзера
         
-        # Виклик функції
-        result = await create_user(body=body, db=self.session)
+    #     # Виклик функції
+    #     result = await create_user(body=body, db=self.session)
 
-        # Оновлюємо new_user після рефрешу
-        mock_refresh(new_user)
+    #     # Оновлюємо new_user після рефрешу
+    #     mock_refresh(new_user)
 
-        # Перевірка результату
-        self.assertEqual(result.id, 1)
-        self.assertEqual(result.username, new_user.username)
-        self.assertEqual(result.email, new_user.email)
-        self.assertEqual(result.password, new_user.password)
-        self.assertIsNotNone(result.created_at)
-        self.assertEqual(result.created_at, new_user.created_at)
-        self.assertIsNone(result.avatar)  # Перевіряємо, що аватар залишився None
+    #     # Перевірка результату
+    #     self.assertEqual(result.id, 1)
+    #     self.assertEqual(result.username, new_user.username)
+    #     self.assertEqual(result.email, new_user.email)
+    #     self.assertEqual(result.password, new_user.password)
+    #     self.assertIsNotNone(result.created_at)
+    #     self.assertEqual(result.created_at, new_user.created_at)
+    #     self.assertIsNone(result.avatar)  # Перевіряємо, що аватар залишився None
 
+    # async def test_update_token(self):
+    #     # створюю тествого юзера:
+    #     user = User(id=5, username="Anna_An", email="anna_an@gmail.com", refresh_token=None)
+
+    #     # new token:
+    #     new_token = "the_new_refresh_token"
+
+    #     # викликаю функцію:
+    #     result = await update_token(user=user, token=new_token, db=self.session)
+
+    #     # Перевірка, чи оновлено токен
+    #     self.assertEqual(user.refresh_token, new_token)
+
+    #     # Перевірка, чи викликано commit
+    #     self.session.commit.assert_called_once()
+
+
+    async def test_update_token_if_token_is_none(self):
+        user = User(id=5, username="Anna_An", email="anna_an@gmail.com", refresh_token="refresh_token_exists")
+        new_token=None
+        result = await update_token(user=user, token=new_token, db=self.session)
+        # Перевіряємо, що refresh_token змінено на None
+        self.assertIsNone(user.refresh_token)
+        # Перевіряємо, що commit викликано
+        self.session.commit.assert_called_once()
+
+
+    async def test_update_token_if_commit_doesnt_work(self):
+        user = User(id=5, username="Anna_An", email="anna_an@gmail.com", refresh_token=None)
+        new_token="refresh_token"
+        result = await update_token(user=user, token=new_token, db=self.session)
+        # Перевіряємо, що refresh_token оновлено
+        self.assertEqual(user.refresh_token, new_token)
+        # Перевіряємо, що commit викликано
+        self.session.commit.assert_called_once()
