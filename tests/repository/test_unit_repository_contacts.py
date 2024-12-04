@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 from sqlalchemy.orm import Session
 
 from src.database.models import Contact, User
-from src.schemas import ContactBase, ContactResponse, ContactUpdate
+from src.schemas import ContactBase, ContactUpdate
 from src.repository.contacts import (
     get_contacts,
     read_contact,

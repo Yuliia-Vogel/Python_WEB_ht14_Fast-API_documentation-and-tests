@@ -31,8 +31,11 @@
 │  ├── __init__.py
 │  └── schemas.py
 ├── tests
-|  ├── __init__.py
-│  └── test_unit_repository_contacts
+|  ├── repository
+|  |   ├── __init__.py
+|  |   ├── test_unit_repository_contacts.py
+|  |   └── test_unit_repository_users.py
+│  └── __init__.py
 ├── __init__.py
 ├── .env
 ├── .env.example
