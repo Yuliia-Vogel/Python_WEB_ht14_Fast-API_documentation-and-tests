@@ -9,7 +9,8 @@ from src.repository.users import (
     get_user_by_email,
     create_user,
     update_token,
-    confirmed_email
+    confirmed_email,
+    update_avatar
     )
 
 
@@ -249,6 +250,29 @@ class TestUsers(unittest.IsolatedAsyncioTestCase):
         # Перевіряємо, що статус user.confirmed оновлено до True:
         self.assertTrue(user.confirmed)
         # Перевіряємо, що commit викликано
+        self.session.commit.assert_called_once()
+
+    @patch("src.repository.users.get_user_by_email")
+    async def test_update_avatar(self, mock_get_user_by_email):
+        email = "test@email.com"
+        new_avatar_url = "http://new.avatar.url"
+        
+        # тестовий юзер:
+        user = User(id=1, email=email, avatar="http://old.avatar.url")
+        
+        # Мокаємо get_user_by_email, щоб він повертав тестового юзера:
+        mock_get_user_by_email.return_value = user
+        
+        # Виклик функції для оновлення аватарки:
+        result = await update_avatar(email=email, url=new_avatar_url, db=self.session)
+
+        # Перевірка, чи функція get_user_by_email викликається з правильними параметрами
+        mock_get_user_by_email.assert_called_once_with(email, self.session)
+        
+        # Перевірка, чи аватарка оновилась:
+        self.assertEqual(result.avatar, new_avatar_url)
+
+        # Перевірка, чи був викликаний commit 
         self.session.commit.assert_called_once()
 
 
