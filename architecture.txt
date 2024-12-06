@@ -35,6 +35,10 @@
 |  |   ├── __init__.py
 |  |   ├── test_unit_repository_contacts.py
 |  |   └── test_unit_repository_users.py
+|  ├── routes
+|  |   ├── __init__.py
+|  |   ├── conftest.py
+|  |   └── test_pytest_route_auth.py
 │  └── __init__.py
 ├── __init__.py
 ├── .env
