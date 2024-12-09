@@ -46,9 +46,13 @@ While performing login, please use your email as a username.
 WARNING!
 After registration, you should go to your email box and verify your email box for the service before logging in.
 
-Щоб запустити тестування - команда в терміналі з кореневої папки:
+UNITTEST
+Щоб запустити тестування Unittest - команда в терміналі з кореневої папки:
 python -m unittest tests/repository/test_unit_repository_contacts.py
+python -m unittest tests/repository/test_unit_repository_users.py
 
+PYTEST
+pytest tests/routes/test_route_auth.py -v
 
 
 ________________________________
