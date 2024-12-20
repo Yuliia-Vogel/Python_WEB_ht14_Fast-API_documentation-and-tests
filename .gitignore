@@ -5,6 +5,9 @@ __pycache__/
 
 postgres-data/
 
+# db for Pytest tests
+test.db
+
 # C extensions
 *.so
 

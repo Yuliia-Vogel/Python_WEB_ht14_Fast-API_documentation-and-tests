@@ -1,5 +1,5 @@
 import redis.asyncio as redis
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi_limiter import FastAPILimiter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse # для обсл.favicon.ico
@@ -38,7 +38,7 @@ app.add_middleware(
 
 
 app.include_router(auth.router, prefix='/api')
-app.include_router(contacts.router, prefix='/api') # для включення маршрутизації, визначеної в модулі contacts
+app.include_router(contacts.router, prefix='/api') 
 app.include_router(users.router, prefix='/api')
 
 @app.on_event("startup")
@@ -50,19 +50,23 @@ async def startup():
 
     :raises redis.exceptions.ConnectionError: If there is an issue connecting to Redis.
     """
+    print("Attempting to connect to Redis...")
     r = await redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0, encoding="utf-8",
                           decode_responses=True)
+    print("Redis connection established.")
     await FastAPILimiter.init(r)
+    print("FastAPILimiter initialized.")
 
 
-@app.get("/")
-def root():
+@app.get("/") 
+async def root():
     """
     Root endpoint of the application.
 
-    Provides a welcome message for users visiting the base URL.
+    Provides a welcome message for users visiting the base URL. 
+    Available 2 times per 5 second as limit maximum.
 
     :return: A dictionary with a welcome message.
     :rtype: dict
     """
-    return {"message": "Welcome to my homework 13"}
+    return {"message": "Welcome to my Fast API web-application!"}

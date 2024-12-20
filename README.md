@@ -53,6 +53,7 @@ python -m unittest tests/repository/test_unit_repository_users.py
 
 PYTEST
 pytest tests/routes/test_route_auth.py -v
+pytest tests/routes/test_route_contacts.py -v
 
 
 ________________________________

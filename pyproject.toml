@@ -23,6 +23,7 @@ pydantic-settings = "^2.6.0"
 fastapi-limiter = "^0.1.6"
 cloudinary = "^1.41.0"
 pytest = "^8.3.4"
+pytest-mock = "^3.14.0"
 
 [tool.poetry.group.dev.dependencies]
 sphinx = "^8.1.3"
