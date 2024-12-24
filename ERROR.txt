@@ -1,0 +1,90 @@
+(venv) PS D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests> pytest -s tests/routes/test_pytest_route_contacts.py
+==================================================== test session starts ====================================================
+platform win32 -- Python 3.11.5, pytest-8.3.4, pluggy-1.5.0
+rootdir: D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests
+configfile: pyproject.toml
+plugins: anyio-4.6.2.post1, mock-3.14.0
+collected 2 items
+
+tests\routes\test_pytest_route_contacts.py .___________________
+responce received
+___________________
+F
+
+========================================================= FAILURES ========================================================== 
+____________________________________________________ test_create_contact ____________________________________________________ 
+
+client = <starlette.testclient.TestClient object at 0x000002056030DAD0>
+token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZWFkcG9vbEBleGFtcGxlLmNvbSIsImlhdCI6MTczNTA2MzI2MiwiZXhwIjoxNzM1MDY0MTYyLCJzY29wZSI6ImFjY2Vzc190b2tlbiJ9.1brt_HG7tam-KWxszqtwMt8DxDFTXA2YmhFLKrZT-8Q'
+
+    def test_create_contact(client, token):
+        new_contact = {
+            "first_name": "Test_Name",
+            "last_name": "Last_Name",
+            "email": "test.contact@example.com",
+            "phone": "+1234567890",
+            "birthday": "1990-01-01",
+            "additional_info": "123 Test Street, Test City",
+        }
+        with patch.object(auth_service, 'r') as r_mock:
+            r_mock.get.return_value = None
+            response = client.post(
+                "/api/contacts",
+                json=new_contact,
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            print("___________________")
+            print("responce received")
+            print("___________________")
+>           assert response.status_code == 201, response.text
+E           AssertionError: {"detail":[{"type":"missing","loc":["query","args"],"msg":"Field required","input":null},{"type":"missing","loc":["query","kwargs"],"msg":"Field required","input":null}]}
+E           assert 422 == 201
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+tests\routes\test_pytest_route_contacts.py:50: AssertionError
+---------------------------------------------------- Captured log setup -----------------------------------------------------
+WARNING  passlib.handlers.bcrypt:bcrypt.py:622 (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+===================================================== warnings summary ====================================================== 
+venv\Lib\site-packages\pydantic\_internal\_config.py:291
+venv\Lib\site-packages\pydantic\_internal\_config.py:291
+venv\Lib\site-packages\pydantic\_internal\_config.py:291
+venv\Lib\site-packages\pydantic\_internal\_config.py:291
+  D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests\venv\Lib\site-packages\pydantic\_internal\_config.py:291: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.9/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+src\database\models.py:9
+  D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests\src\database\models.py:9: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+main.py:44
+  D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests\main.py:44: DeprecationWarning:
+          on_event is deprecated, use lifespan event handlers instead.
+
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+
+    @app.on_event("startup")
+
+venv\Lib\site-packages\fastapi\applications.py:4495
+  D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests\venv\Lib\site-packages\fastapi\applications.py:4495: DeprecationWarning:
+          on_event is deprecated, use lifespan event handlers instead.
+
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+
+    return self.router.on_event(event_type)
+
+tests/routes/test_pytest_route_contacts.py::test_create_contact
+  D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests\venv\Lib\site-packages\pydantic\main.py:1114: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.9/migration/
+    warnings.warn('The `dict` method is deprecated; use `model_dump` instead.', category=PydanticDeprecatedSince20)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================================== short test summary info ================================================== 
+FAILED tests/routes/test_pytest_route_contacts.py::test_create_contact - AssertionError: {"detail":[{"type":"missing","loc":["query","args"],"msg":"Field required","input":null},{"type":"missing...
+========================================== 1 failed, 1 passed, 8 warnings in 2.12s ========================================== 
+(venv) PS D:\Yuliia\ht14_Fast API_documentation and tests\Python_WEB_ht14_Fast-API_documentation-and-tests>

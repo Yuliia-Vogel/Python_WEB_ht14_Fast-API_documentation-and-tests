@@ -54,14 +54,18 @@ def client(session):
 
 @pytest.fixture(scope="session", autouse=True)
 def mock_rate_limiter():
-    # Мокаємо методи FastAPILimiter, щоб уникнути реального використання
-    with patch("fastapi_limiter.depends.FastAPILimiter") as mock_limiter:
+     with patch("fastapi_limiter.depends.FastAPILimiter") as mock_limiter, \
+         patch("fastapi_limiter.depends.RateLimiter.__call__", new_callable=AsyncMock) as mock_rate_limiter_call:
+        # Мокаємо FastAPILimiter.init
         mock_instance = MagicMock()
         mock_instance.init = AsyncMock()  # Мокаємо метод init
         mock_instance.redis = True       # Робимо вигляд, що Redis ініціалізовано
         mock_limiter.return_value = mock_instance
-        yield
 
+        # Мокаємо виклик залежності RateLimiter
+        mock_rate_limiter_call.return_value = None
+
+        yield
 
 @pytest.fixture(scope="module")
 def user():
