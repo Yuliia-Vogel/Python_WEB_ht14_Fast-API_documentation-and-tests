@@ -70,3 +70,12 @@ def mock_rate_limiter():
 @pytest.fixture(scope="module")
 def user():
     return {"username": "deadpool", "email": "deadpool@example.com", "password": "123456789"}
+# def user(session):  # Передаємо session як параметр
+#     new_user = User(
+#         username="deadpool",
+#         email="deadpool@example.com",
+#         password="123456789"
+#     )
+#     session.add(new_user)
+#     session.commit()
+#     return new_user
