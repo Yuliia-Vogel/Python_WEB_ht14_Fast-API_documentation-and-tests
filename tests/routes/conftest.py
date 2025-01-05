@@ -43,39 +43,16 @@ def client(session):
 
     app_application.dependency_overrides[get_db] = override_get_db
 
-    # Mock FastAPILimiter initialization 
-    # (додаю тут, тому що інакше ніяк не мокається FastAPILimiter.init, і тому падають тести)
-    # # але спрацювало лише для ендпоінту /, де немає залежностей :-(((
-    # FastAPILimiter.init = AsyncMock(return_value=None)  # явна заміна FastAPILimiter
-    # app_application.dependency_overrides[RateLimiter] = lambda: None
-
     yield TestClient(app_application)
 
 
-@pytest.fixture(scope="session", autouse=True)
-def mock_rate_limiter():
-     with patch("fastapi_limiter.depends.FastAPILimiter") as mock_limiter, \
-         patch("fastapi_limiter.depends.RateLimiter.__call__", new_callable=AsyncMock) as mock_rate_limiter_call:
-        # Мокаємо FastAPILimiter.init
-        mock_instance = MagicMock()
-        mock_instance.init = AsyncMock()  # Мокаємо метод init
-        mock_instance.redis = True       # Робимо вигляд, що Redis ініціалізовано
-        mock_limiter.return_value = mock_instance
-
-        # Мокаємо виклик залежності RateLimiter
+@pytest.fixture(scope="module", autouse=True)
+def disable_rate_limiter():
+    with patch("fastapi_limiter.depends.RateLimiter.__call__", new_callable=AsyncMock) as mock_rate_limiter_call:
         mock_rate_limiter_call.return_value = None
-
         yield
+
 
 @pytest.fixture(scope="module")
 def user():
     return {"username": "deadpool", "email": "deadpool@example.com", "password": "123456789"}
-# def user(session):  # Передаємо session як параметр
-#     new_user = User(
-#         username="deadpool",
-#         email="deadpool@example.com",
-#         password="123456789"
-#     )
-#     session.add(new_user)
-#     session.commit()
-#     return new_user
