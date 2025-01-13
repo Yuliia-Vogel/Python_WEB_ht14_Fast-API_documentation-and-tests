@@ -90,7 +90,6 @@ async def read_contact(contact_id: int, db: Session = Depends(get_db),
     :return: The contact with the specified ID.
     :rtype: ContactResponse
     """
-    print("Entering create_contact route")
     contact = await repository_contacts.read_contact(contact_id, current_user, db)
     if contact is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Contact {contact_id} not found")
@@ -121,10 +120,6 @@ async def create_contact(request: Request,
     :return: The newly created contact.
     :rtype: ContactResponse
     """
-    print(f"Request query params: {request.query_params}")  # Друкуємо query-параметри
-    body_json = await request.json()  # Отримуємо тіло запиту як JSON
-    print(f"Request body: {body_json}")  # Друкуємо тіло запиту
-    print("Received data:", body)  # Друкуємо валідовані дані з body
     new_contact = await repository_contacts.create_contact(body, current_user, db)
     return ContactResponse.from_orm(new_contact)
 
