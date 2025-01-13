@@ -118,3 +118,29 @@ def test_read_contact(mock_redis, mock_read_contact, client, token):
     assert data["additional_info"] == mocked_contact["additional_info"]
     assert "created_at" in data
     assert "owner_id" in data
+
+
+@patch("src.repository.contacts.read_contact")
+@patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
+def test_get_contact_not_found(mock_redis, mock_read_contact, client, token):
+    # Налаштовуємо мок Redis
+    mock_redis.set("user:test.contact@example.com", "mocked_value")
+
+    # ID неіснуючого контакту
+    contact_id = 2
+
+    # Мокаємо репозиторій для повернення None
+    mock_read_contact.return_value = None
+
+    # Виконуємо запит до роута
+    response = client.get(
+        f"/api/contacts/{contact_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    # Перевіряємо статус відповіді
+    assert response.status_code == 404, response.text
+    
+    # Перевіряємо дані у відповіді
+    data = response.json()
+    assert data["detail"] == f"Contact {contact_id} not found"
