@@ -250,3 +250,26 @@ def test_get_upcoming_birthdays(mock_redis, mock_get_upcoming_birthdays, client,
     assert data[0]["created_at"] == contact_bd["created_at"]
     assert data[0]["owner_id"] == contact_bd["owner_id"]
 
+
+@patch("src.repository.contacts.get_upcoming_birthdays")
+@patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
+def test_get_upcoming_birthdays_not_found(mock_redis, mock_get_upcoming_birthdays, client, token):
+    # Налаштовуємо мок Redis
+    mock_redis.set("user:test.contact@example.com", "mocked_value")
+    
+    # модель відповіді List[ContactResponse]
+    mocked_list = []
+
+    # Мокаємо репозиторій для повернення контакту
+    mock_get_upcoming_birthdays.return_value = mocked_list
+    
+    response = client.get(
+            "/api/contacts/birthdays",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+     # Перевіряємо статус відповіді
+    assert response.status_code == 404, response.text
+
+    # Перевіряємо повідомлення про помилку
+    data = response.json()
+    assert data == {"detail": "No upcoming birthdays"}
