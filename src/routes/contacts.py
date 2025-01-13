@@ -103,7 +103,7 @@ async def read_contact(contact_id: int, db: Session = Depends(get_db),
 async def create_contact(request: Request,
                          body: ContactBase, 
                          db: Session = Depends(get_db),
-                         current_user: User = Depends(auth_service.get_current_user)):  # Додаємо параметр request
+                         current_user: User = Depends(auth_service.get_current_user)):  # Додаємо параметр request для того, щоб уникнути проблем при розпаковці отриманих даних в тестах pytest
     """
     Creates a new contact record in the database for the authenticated user.
 

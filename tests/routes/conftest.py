@@ -2,14 +2,12 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
-from main import app as app_application
+from main import app
 from src.database.models import Base
 from src.database.db import get_db
-from fastapi_limiter import FastAPILimiter
-from fastapi_limiter.depends import RateLimiter
-
+from .utils import mock_redis, mock_rate_limiter  # Імпортуємо моки
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
@@ -21,7 +19,7 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(scope="module")
 def session():
-    # Create the database
+    # Створення бази даних
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
@@ -41,15 +39,14 @@ def client(session):
         finally:
             session.close()
 
-    app_application.dependency_overrides[get_db] = override_get_db
-
-    yield TestClient(app_application)
+    app.dependency_overrides[get_db] = override_get_db
+    yield TestClient(app)
 
 
 @pytest.fixture(scope="module", autouse=True)
-def disable_rate_limiter():
-    with patch("fastapi_limiter.depends.RateLimiter.__call__", new_callable=AsyncMock) as mock_rate_limiter_call:
-        mock_rate_limiter_call.return_value = None
+def setup_mocks():
+    # Автоматичне підключення моків Redis і RateLimiter
+    with mock_redis(), mock_rate_limiter():
         yield
 
 
