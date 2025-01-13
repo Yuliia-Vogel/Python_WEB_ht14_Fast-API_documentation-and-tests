@@ -1,8 +1,9 @@
 import pytest
+# from contextlib import contextmanager
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from unittest.mock import patch
+# from unittest.mock import patch
 
 from main import app
 from src.database.models import Base
@@ -45,9 +46,9 @@ def client(session):
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_mocks():
-    # Автоматичне підключення моків Redis і RateLimiter
-    with mock_redis(), mock_rate_limiter():
-        yield
+    # Використовуємо контекстні менеджери для генераторів
+    with mock_redis() as redis_mock, mock_rate_limiter() as limiter_mock:
+        yield redis_mock, limiter_mock
 
 
 @pytest.fixture(scope="module")

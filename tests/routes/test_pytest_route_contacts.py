@@ -1,7 +1,18 @@
-from unittest.mock import MagicMock
 import pytest
+import fakeredis # без цього в мене ну ніяк не мокався Редіс
+
+from unittest.mock import MagicMock, patch
+
 from src.database.models import User
-from src.services.auth import auth_service
+# from src.services.auth import auth_service
+
+
+@pytest.fixture
+def mock_redis():
+    # Створюємо мок Redis
+    fake_redis = fakeredis.FakeStrictRedis()
+    with patch("src.services.auth.redis.StrictRedis", return_value=fake_redis):
+        yield fake_redis
 
 
 @pytest.fixture()
@@ -20,7 +31,14 @@ def token(client, user, session, monkeypatch):
     return data["access_token"]
 
 
-def test_create_contact(client, token):
+@patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
+def test_create_contact(mock_redis, client, token):
+    # Використовуємо моканий Redis
+     # Тепер r.get() у auth_service використовує моканий Redis
+    mock_redis.set("user:test.contact@example.com", "mocked_value")
+
+    print("Mock keys:", mock_redis.keys("*"))  # Повинно показати ключі в моканій базі
+
     new_contact = {
         "first_name": "Test_Name",
         "last_name": "Last_Name",
@@ -39,7 +57,7 @@ def test_create_contact(client, token):
 
     # Перевіряємо статус відповіді
     assert response.status_code == 201, response.text
-
+    
     # Перевіряємо дані у відповіді
     data = response.json()
     assert "id" in data
