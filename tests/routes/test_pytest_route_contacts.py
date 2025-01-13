@@ -33,7 +33,6 @@ def token(client, user, session, monkeypatch):
 
 @patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
 def test_create_contact(mock_redis, client, token):
-    # Використовуємо моканий Redis
      # Тепер r.get() у auth_service використовує моканий Redis
     mock_redis.set("user:test.contact@example.com", "mocked_value")
 
@@ -144,3 +143,67 @@ def test_get_contact_not_found(mock_redis, mock_read_contact, client, token):
     # Перевіряємо дані у відповіді
     data = response.json()
     assert data["detail"] == f"Contact {contact_id} not found"
+
+
+@patch("src.repository.contacts.get_contacts")
+@patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
+def test_get_contacts(mock_redis, mock_get_contacts, client, token):
+    # Налаштовуємо мок Redis
+    mock_redis.set("user:test.contact@example.com", "mocked_value")
+    
+    # Мокані контакти, які відповідатимуть моделі ContactResponse
+    contact_1 = {
+        "id": 1,
+        "first_name": "Name1",
+        "last_name": "Last1",
+        "email": "last_name_1@gmail.com",
+        "phone": "+1234567890",
+        "birthday": "1999-01-01",
+        "additional_info": "Test address 1, Test City1",
+        "created_at": "2025-01-01T00:00:00",
+        "owner_id": 1
+    }
+    contact_2 = {
+        "id": 2,
+        "first_name": "Name2",
+        "last_name": "Last2",
+        "email": "last_name_2@mail.com",
+        "phone": "+2345678901",
+        "birthday": "1921-01-01",
+        "additional_info": "Test address 2, Test City2",
+        "created_at": "2025-01-02T00:00:00",
+        "owner_id": 1
+    }
+
+    mocked_list_of_contacts = [contact_1, contact_2]
+
+    # Мокаємо репозиторій для повернення контакту
+    mock_get_contacts.return_value = mocked_list_of_contacts
+
+    response = client.get(
+            "/api/contacts",
+            headers={"Authorization": f"Bearer {token}"},
+            params={"args": "value", "kwargs": "value"}
+        )
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert isinstance(data, list)
+    assert data[0]["id"] == contact_1["id"]
+    assert data[0]["first_name"] == contact_1["first_name"]
+    assert data[0]["last_name"] == contact_1["last_name"]
+    assert data[0]["email"] == contact_1["email"]
+    assert data[0]["phone"] == contact_1["phone"]
+    assert data[0]["birthday"] == contact_1["birthday"]
+    assert data[0]["additional_info"] == contact_1["additional_info"]
+    assert data[0]["created_at"] == contact_1["created_at"]
+    assert data[0]["owner_id"] == contact_1["owner_id"]
+
+    assert data[1]["id"] == contact_2["id"]
+    assert data[1]["first_name"] == contact_2["first_name"]
+    assert data[1]["last_name"] == contact_2["last_name"]
+    assert data[1]["email"] == contact_2["email"]
+    assert data[1]["phone"] == contact_2["phone"]
+    assert data[1]["birthday"] == contact_2["birthday"]
+    assert data[1]["additional_info"] == contact_2["additional_info"]
+    assert data[1]["created_at"] == contact_2["created_at"]
+    assert data[1]["owner_id"] == contact_2["owner_id"]

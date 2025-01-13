@@ -38,16 +38,19 @@ async def get_upcoming_birthdays(db: Session = Depends(get_db),
 
 @router.get("/", response_model=List[ContactResponse], description='No more than 10 requests per minute',
             dependencies=[Depends(RateLimiter(times=10, seconds=60))])
-async def get_contacts(skip: int = 0, limit: int = 20, db: Session = Depends(get_db),
+async def get_contacts(request: Request,
+                       skip: int = 0, limit: int = 20, db: Session = Depends(get_db),
                        current_user: User = Depends(auth_service.get_current_user),
                        first_name: str | None = Query(None), 
                        last_name: str | None = Query(None),
-                       email: str | None = Query(None)):
+                       email: str | None = Query(None)): # Додаємо параметр request для того, щоб уникнути проблем при розпаковці отриманих даних в тестах pytest
     """
     Retrieves a list of contacts for the authenticated user. Supports optional filtering by first name, last name, or email.
 
     :http method: GET
     :path: /
+    :param request: The incoming HTTP request.
+    :type request: Request
     :param skip: The number of contacts to skip for pagination.
     :type skip: int
     :param limit: The maximum number of contacts to return for pagination.
