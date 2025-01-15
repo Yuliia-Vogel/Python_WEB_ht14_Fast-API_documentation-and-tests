@@ -4,7 +4,6 @@ import fakeredis # без цього в мене ну ніяк не мокавс
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from src.database.models import User
-# from src.services.auth import auth_service
 
 
 @pytest.fixture 
