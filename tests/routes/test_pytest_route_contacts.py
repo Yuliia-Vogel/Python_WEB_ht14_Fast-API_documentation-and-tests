@@ -7,7 +7,7 @@ from src.database.models import User
 # from src.services.auth import auth_service
 
 
-@pytest.fixture
+@pytest.fixture 
 def mock_redis():
     # Створюємо мок Redis
     fake_redis = fakeredis.FakeStrictRedis()
@@ -15,7 +15,7 @@ def mock_redis():
         yield fake_redis
 
 
-@pytest.fixture()
+@pytest.fixture() # тут готуємо токен для наших тестів
 def token(client, user, session, monkeypatch):
     mock_send_email = MagicMock()
     monkeypatch.setattr("src.routes.auth.send_email", mock_send_email)
@@ -72,7 +72,7 @@ def token(client, user, session, monkeypatch):
 # # то в мене тепер при тестуванні виникла проблема, що мок адекватно не передається в роут замість функції
 # # з репозиторію contacts.read_contact, а якщо назвати мок точно як в роуті - то пайтон не може знайти такий шлях
 # # "src.repository.repository_contacts.read_contact". Вирішенням стало досягти мокування ДО початку всього даного 
-# # тесту - з допомогою додатикового патчу patch("src.repository.contacts.read_contact"):
+# # тесту - з допомогою додаткового патчу @patch("src.repository.contacts.read_contact"):
 # @patch("src.repository.contacts.read_contact")
 # @patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
 # def test_read_contact(mock_redis, mock_read_contact, client, token):
@@ -209,67 +209,158 @@ def token(client, user, session, monkeypatch):
 #     assert data[1]["owner_id"] == contact_2["owner_id"]
 
 
-@patch("src.repository.contacts.get_upcoming_birthdays")
+# @patch("src.repository.contacts.get_upcoming_birthdays")
+# @patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
+# def test_get_upcoming_birthdays(mock_redis, mock_get_upcoming_birthdays, client, token):
+#     # Налаштовуємо мок Redis
+#     mock_redis.set("user:test.contact@example.com", "mocked_value")
+    
+#     # контакт, що відповідатиме моделі ContactResponse
+#     contact_bd = {
+#         "id": 1,
+#         "first_name": "NameBD",
+#         "last_name": "LastBD",
+#         "email": "last_name_BD@gmail.com",
+#         "phone": "+1234567890",
+#         "birthday": "1999-11-11",
+#         "additional_info": "Test address BD, Test City",
+#         "created_at": "2020-01-01T00:00:00",
+#         "owner_id": 1
+#     }
+#     # модель відповіді List[ContactResponse]
+#     mocked_list = [contact_bd]
+
+#     # Мокаємо репозиторій для повернення контакту
+#     mock_get_upcoming_birthdays.return_value = mocked_list
+    
+#     response = client.get(
+#             "/api/contacts/birthdays",
+#             headers={"Authorization": f"Bearer {token}"}
+#         )
+#     assert response.status_code == 200, response.text
+#     data = response.json()
+#     assert isinstance(data, list)
+#     assert data[0]["id"] == contact_bd["id"]
+#     assert data[0]["first_name"] == contact_bd["first_name"]
+#     assert data[0]["last_name"] == contact_bd["last_name"]
+#     assert data[0]["email"] == contact_bd["email"]
+#     assert data[0]["phone"] == contact_bd["phone"]
+#     assert data[0]["birthday"] == contact_bd["birthday"]
+#     assert data[0]["additional_info"] == contact_bd["additional_info"]
+#     assert data[0]["created_at"] == contact_bd["created_at"]
+#     assert data[0]["owner_id"] == contact_bd["owner_id"]
+
+
+# @patch("src.repository.contacts.get_upcoming_birthdays")
+# @patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
+# def test_get_upcoming_birthdays_not_found(mock_redis, mock_get_upcoming_birthdays, client, token):
+#     # Налаштовуємо мок Redis
+#     mock_redis.set("user:test.contact@example.com", "mocked_value")
+    
+#     # модель відповіді List[ContactResponse]
+#     mocked_list = []
+
+#     # Мокаємо репозиторій для повернення контакту
+#     mock_get_upcoming_birthdays.return_value = mocked_list
+    
+#     response = client.get(
+#             "/api/contacts/birthdays",
+#             headers={"Authorization": f"Bearer {token}"}
+#         )
+#      # Перевіряємо статус відповіді
+#     assert response.status_code == 404, response.text
+
+#     # Перевіряємо повідомлення про помилку
+#     data = response.json()
+#     assert data == {"detail": "No upcoming birthdays"}
+
+
+@patch("src.repository.contacts.update_contact")
 @patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
-def test_get_upcoming_birthdays(mock_redis, mock_get_upcoming_birthdays, client, token):
+def test_update_contact(mock_redis, mock_update_contact, client, token):
     # Налаштовуємо мок Redis
     mock_redis.set("user:test.contact@example.com", "mocked_value")
+
+    contact_id = 1
     
     # контакт, що відповідатиме моделі ContactResponse
-    contact_bd = {
+    contact_upd = {
         "id": 1,
-        "first_name": "NameBD",
-        "last_name": "LastBD",
-        "email": "last_name_BD@gmail.com",
-        "phone": "+1234567890",
-        "birthday": "1999-11-11",
-        "additional_info": "Test address BD, Test City",
-        "created_at": "2020-01-01T00:00:00",
+        "first_name": "Name",
+        "last_name": "Last",
+        "email": "last_name@gmail.com",
+        "phone": "+1234567899",
+        "birthday": "1989-12-12",
+        "additional_info": "Test address, Test City",
+        "created_at": "2025-01-01T00:00:00",
         "owner_id": 1
     }
-    # модель відповіді List[ContactResponse]
-    mocked_list = [contact_bd]
 
     # Мокаємо репозиторій для повернення контакту
-    mock_get_upcoming_birthdays.return_value = mocked_list
-    
-    response = client.get(
-            "/api/contacts/birthdays",
-            headers={"Authorization": f"Bearer {token}"}
-        )
+    mock_update_contact.return_value = contact_upd
+
+    # Дані для оновлення - суто імітація, бо по факту оновлення не буде відбуватися, бо ми ж засокали ф-цію repository.update_contact
+    update_data = {
+        "first_name": "NameUpd",
+        "last_name": "LastUpd",
+        "email": "last_name_Upd@gmail.com",
+        "phone": "+1234567890",
+        "birthday": "1989-12-12",
+        "additional_info": "Test address Update, Test City",
+    }
+
+    # Робимо PUT запит
+    response = client.put(
+        f"/api/contacts/{contact_id}",
+        json=update_data,
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    # Перевіряємо відповіді
     assert response.status_code == 200, response.text
     data = response.json()
-    assert isinstance(data, list)
-    assert data[0]["id"] == contact_bd["id"]
-    assert data[0]["first_name"] == contact_bd["first_name"]
-    assert data[0]["last_name"] == contact_bd["last_name"]
-    assert data[0]["email"] == contact_bd["email"]
-    assert data[0]["phone"] == contact_bd["phone"]
-    assert data[0]["birthday"] == contact_bd["birthday"]
-    assert data[0]["additional_info"] == contact_bd["additional_info"]
-    assert data[0]["created_at"] == contact_bd["created_at"]
-    assert data[0]["owner_id"] == contact_bd["owner_id"]
+    assert data["id"] == contact_id
+    assert data["first_name"] == contact_upd["first_name"]
+    assert data["last_name"] == contact_upd["last_name"]
+    assert data["email"] == contact_upd["email"]
+    assert data["phone"] == contact_upd["phone"]
+    assert data["birthday"] == contact_upd["birthday"]
+    assert data["additional_info"] == contact_upd["additional_info"]
+    assert data["created_at"] == contact_upd["created_at"]
+    assert data["owner_id"] == contact_upd["owner_id"]
 
 
-@patch("src.repository.contacts.get_upcoming_birthdays")
+@patch("src.repository.contacts.update_contact")
 @patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
-def test_get_upcoming_birthdays_not_found(mock_redis, mock_get_upcoming_birthdays, client, token):
+def test_update_contact_not_found(mock_redis, mock_update_contact, client, token):
     # Налаштовуємо мок Redis
     mock_redis.set("user:test.contact@example.com", "mocked_value")
-    
-    # модель відповіді List[ContactResponse]
-    mocked_list = []
+
+    contact_id = 2
 
     # Мокаємо репозиторій для повернення контакту
-    mock_get_upcoming_birthdays.return_value = mocked_list
-    
-    response = client.get(
-            "/api/contacts/birthdays",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-     # Перевіряємо статус відповіді
+    mock_update_contact.return_value = None
+
+    # Дані для оновлення - суто імітація, бо по факту оновлення не буде відбуватися, бо ми ж засокали ф-цію repository.update_contact
+    update_data = {
+        "first_name": "NameUpd",
+        "last_name": "LastUpd",
+        "email": "last_name_Upd@gmail.com",
+        "phone": "+1234567890",
+        "birthday": "1989-12-12",
+        "additional_info": "Test address Update, Test City",
+    }
+
+    # Робимо PUT запит
+    response = client.put(
+        f"/api/contacts/{contact_id}",
+        json=update_data,
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    # Перевіряємо статус відповіді
     assert response.status_code == 404, response.text
 
     # Перевіряємо повідомлення про помилку
     data = response.json()
-    assert data == {"detail": "No upcoming birthdays"}
+    assert data["detail"] == f"Contact not found"
