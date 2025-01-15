@@ -1,7 +1,7 @@
 import pytest
 import fakeredis # без цього в мене ну ніяк не мокався Редіс
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from src.database.models import User
 # from src.services.auth import auth_service
@@ -209,27 +209,27 @@ def token(client, user, session, monkeypatch):
 #     assert data[1]["owner_id"] == contact_2["owner_id"]
 
 
-@patch("src.repository.contacts.get_contacts")
-@patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
-def test_get_contacts_not_found(mock_redis, mock_get_contacts, client, token):
-    # Налаштовуємо мок Redis
-    mock_redis.set("user:test.contact@example.com", "mocked_value")
+# @patch("src.repository.contacts.get_contacts")
+# @patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
+# def test_get_contacts_not_found(mock_redis, mock_get_contacts, client, token):
+#     # Налаштовуємо мок Redis
+#     mock_redis.set("user:test.contact@example.com", "mocked_value")
 
-    mocked_list_of_contacts = []
+#     mocked_list_of_contacts = []
 
-    # Мокаємо репозиторій для повернення контакту
-    mock_get_contacts.return_value = mocked_list_of_contacts
+#     # Мокаємо репозиторій для повернення контакту
+#     mock_get_contacts.return_value = mocked_list_of_contacts
 
-    response = client.get(
-            "/api/contacts",
-            headers={"Authorization": f"Bearer {token}"},
-            params={"args": "value", "kwargs": "value"}
-        )
-    assert response.status_code == 200, response.text
-    data = response.json()
-    assert isinstance(data, list)
-    assert len(data) == 0
-    assert data == [], "Expected an empty list, but got something else."
+#     response = client.get(
+#             "/api/contacts",
+#             headers={"Authorization": f"Bearer {token}"},
+#             params={"args": "value", "kwargs": "value"}
+#         )
+#     assert response.status_code == 200, response.text
+#     data = response.json()
+#     assert isinstance(data, list)
+#     assert len(data) == 0
+#     assert data == [], "Expected an empty list, but got something else."
 
 
 # @patch("src.repository.contacts.get_upcoming_birthdays")
@@ -387,3 +387,48 @@ def test_get_contacts_not_found(mock_redis, mock_get_contacts, client, token):
 #     # Перевіряємо повідомлення про помилку
 #     data = response.json()
 #     assert data["detail"] == f"Contact not found"
+
+
+@patch("src.repository.contacts.remove_contact")
+@patch("src.services.auth.auth_service.r", new_callable=fakeredis.FakeStrictRedis)
+def test_remove_contact(mock_redis, mock_remove_contact, client, token):
+    # Налаштовуємо мок Redis
+    mock_redis.set("user:test.contact@example.com", "mocked_value")
+
+    contact_id = 2
+
+    # контакт, що відповідатиме моделі ContactResponse
+    contact_remove = {
+        "id": 2,
+        "first_name": "Name",
+        "last_name": "Last",
+        "email": "last_name@gmail.com",
+        "phone": "+1234567899",
+        "birthday": "1989-12-12",
+        "additional_info": "Test address, Test City",
+        "created_at": "2025-01-01T00:00:00",
+        "owner_id": 1
+    }
+
+    # Мокаємо асинхронний репозиторій для повернення контакту
+    mock_remove_contact.return_value = AsyncMock()
+    mock_remove_contact.return_value = MagicMock(**contact_remove)
+
+    # Робимо DELETE запит
+    response = client.delete(
+        f"/api/contacts/{contact_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    # Перевіряємо відповіді
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["id"] == contact_id
+    assert data["first_name"] == contact_remove["first_name"]
+    assert data["last_name"] == contact_remove["last_name"]
+    assert data["email"] == contact_remove["email"]
+    assert data["phone"] == contact_remove["phone"]
+    assert data["birthday"] == contact_remove["birthday"]
+    assert data["additional_info"] == contact_remove["additional_info"]
+    assert data["created_at"] == contact_remove["created_at"]
+    assert data["owner_id"] == contact_remove["owner_id"]
